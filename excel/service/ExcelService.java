@@ -54,15 +54,15 @@ public class ExcelService extends EgovAbstractServiceImpl {
 
     @Autowired private LayerService svc;
 
-	@Autowired private LayerGroupService group;
+    @Autowired private LayerGroupService group;
 
-	@Autowired private LayerStyleService style;
+    @Autowired private LayerStyleService style;
 
-	@Resource(name = "excelMapper")
+    @Resource(name = "excelMapper")
     private ExcelMapper mapper;
 
-	@Resource(name = "txManager")
-   	PlatformTransactionManager transactionManager;
+    @Resource(name = "txManager")
+    PlatformTransactionManager transactionManager;
 
     @Resource
     private Validator validator;
@@ -87,7 +87,7 @@ public class ExcelService extends EgovAbstractServiceImpl {
     private ColumnTypeVo colTypeObj;
     private ColumnLengthVo colLenObj;
 
-	private ReflectionUtil<ColumnNameVo> refColNm;
+    private ReflectionUtil<ColumnNameVo> refColNm;
     private ReflectionUtil<ColumnKoreaNameVo> refColKrNm;
     private ReflectionUtil<ColumnTypeVo> refColType;
     private ReflectionUtil<ColumnLengthVo> refColLen;
@@ -99,90 +99,17 @@ public class ExcelService extends EgovAbstractServiceImpl {
     	colNmObj = new ColumnNameVo();
     	colKrNmObj = new ColumnKoreaNameVo();
     	colTypeObj = new ColumnTypeVo();
-	    colLenObj = new ColumnLengthVo();
+	colLenObj = new ColumnLengthVo();
 
-	    refColNm = new ReflectionUtil<ColumnNameVo>(colNmObj);
-	    refColKrNm = new ReflectionUtil<ColumnKoreaNameVo>(colKrNmObj);
-	    refColType = new ReflectionUtil<ColumnTypeVo>(colTypeObj);
-	    refColLen = new ReflectionUtil<ColumnLengthVo>(colLenObj);
+	refColNm = new ReflectionUtil<ColumnNameVo>(colNmObj);
+	refColKrNm = new ReflectionUtil<ColumnKoreaNameVo>(colKrNmObj);
+	refColType = new ReflectionUtil<ColumnTypeVo>(colTypeObj);
+	refColLen = new ReflectionUtil<ColumnLengthVo>(colLenObj);
 
     }
 
-	public List<String> getExcelColumnList(MultipartFile file) throws Exception {
-
-		List<String> list = null;
-		String[] splitList=file.getOriginalFilename().split(Pattern.quote("."));
-		String excelType=splitList[splitList.length-1];
-	    if("xlsx".equals(excelType)){
-	    	list=getExcelColumnListAtXlsx(file);
-	    }
-	    else if("xls".equals(excelType)){
-	    	list=getExcelColumnListAtXls(file);
-	    }else{
-	    	throw new Exception();
-        }
-
-		return list;
-
-	}
-
-	private List<String> getExcelColumnListAtXlsx(MultipartFile file) throws IOException {
-		Workbook workbook=null;
-		List<String> list=new ArrayList<String>();
-		try{
-			workbook= new XSSFWorkbook(file.getInputStream());
-	        Sheet sheet = workbook.getSheetAt(0);
-	        Iterator<Row> rows = sheet.iterator();
-
-	        while (rows.hasNext()) {
-		       	Row currentRow = rows.next();
-		       	Iterator<Cell> cellsInRow = currentRow.iterator();
-		       	while (cellsInRow.hasNext()) {
-		       		Cell currentCell = cellsInRow.next();
-		       		list.add(currentCell.getStringCellValue());
-		       	}
-		       	break;
-	        }
-		}catch(Exception e){
-			list=null;
-			e.printStackTrace();
-		}finally{
-			 if(workbook!=null){
-				 workbook.close();
-			 }
-		}
-		return list;
-	}
-
-    private List<String> getExcelColumnListAtXls(MultipartFile file) throws IOException {
-    	HSSFWorkbook workbook=null;
-		List<String> list=new ArrayList<String>();
-		try{
-			workbook= new HSSFWorkbook(file.getInputStream());
-	        Sheet sheet = workbook.getSheetAt(0);
-	        Iterator<Row> rows = sheet.iterator();
-
-	        while (rows.hasNext()) {
-		       	Row currentRow = rows.next();
-		       	Iterator<Cell> cellsInRow = currentRow.iterator();
-		       	while (cellsInRow.hasNext()) {
-		       		Cell currentCell = cellsInRow.next();
-		       		list.add(currentCell.getStringCellValue());
-		       	}
-		       	break;
-	        }
-		}catch(Exception e){
-			list=null;
-			e.printStackTrace();
-		}finally{
-			 if(workbook!=null){
-				 workbook.close();
-			 }
-		}
-		return list;
-	}
-
-	public String uploadExcel(HashMap<String, String> map, MultipartFile file) throws Exception {
+	
+    public String uploadExcel(HashMap<String, String> map, MultipartFile file) throws Exception {
     	String result="success";
 
     	try{
@@ -190,9 +117,9 @@ public class ExcelService extends EgovAbstractServiceImpl {
     		setTableInfo(map);
     		setColInfo(map);
 
-			executeDDL();
+		executeDDL();
 
-			executeDML(file);
+		executeDML(file);
 
     		insertLayerInfo(map);
 
@@ -212,65 +139,64 @@ public class ExcelService extends EgovAbstractServiceImpl {
     }
 
 
-	private void setTableInfo(HashMap<String, String> map) throws UnsupportedEncodingException{
-		this.tblNm=map.get("tblNm");
-		this.tblKrNm=map.get("tblKrNm");
-		this.lyrTyp=map.get("lyrTyp");
+    private void setTableInfo(HashMap<String, String> map) throws UnsupportedEncodingException{
+	this.tblNm=map.get("tblNm");
+	this.tblKrNm=map.get("tblKrNm");
+	this.lyrTyp=map.get("lyrTyp");
     }
 
-	private void setColInfo(HashMap<String, String> map) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, UnsupportedEncodingException {
-		this.colCnt=Integer.parseInt(map.get("colCnt"));
+    private void setColInfo(HashMap<String, String> map) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, UnsupportedEncodingException {
+	this.colCnt=Integer.parseInt(map.get("colCnt"));
 
-		for(int i=2; i<colCnt; i++){
-			this.refColNm.invokeSetMethod(colNmObj, "colNm"+i, map.get("colNm"+i));
-			this.refColKrNm.invokeSetMethod(colKrNmObj, "colKrNm"+i, map.get("colKrNm"+i));
-			this.refColType.invokeSetMethod(colTypeObj, "colType"+i, map.get("colType"+i));
-			this.refColLen.invokeSetMethod(colLenObj, "colLen"+i, map.get("colLen"+i));
-		}
+	for(int i=2; i<colCnt; i++){
+		this.refColNm.invokeSetMethod(colNmObj, "colNm"+i, map.get("colNm"+i));
+		this.refColKrNm.invokeSetMethod(colKrNmObj, "colKrNm"+i, map.get("colKrNm"+i));
+		this.refColType.invokeSetMethod(colTypeObj, "colType"+i, map.get("colType"+i));
+		this.refColLen.invokeSetMethod(colLenObj, "colLen"+i, map.get("colLen"+i));
+	}
     }
 //한글 인코딩이 안되어있어서 만든 함수. web.xml에서 인코딩 설정하니까 한글 인코딩이 됨. 그래서 주석 처리함.
 //	private String changeCharset(String str) throws UnsupportedEncodingException {
 //		String result = new String(StrUtil.chkNull(str).getBytes("8859_1"),"utf-8");
 //		return result;
 //    }
+    private void executeDDL() throws SQLException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
 
-	private void executeDDL() throws SQLException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	String tableName=tblNm;
+	String tableKoreaName=tblKrNm;
+	String layerType=replaceLyrTypToGeoType(lyrTyp);
 
-		String tableName=tblNm;
-		String tableKoreaName=tblKrNm;
-		String layerType=replaceLyrTypToGeoType(lyrTyp);
+	HashMap<String,Object> columnKrNmMap=makeColumnKrNmMap();
+	HashMap<String,Object> columnTypeMap=makeColumnTypeMap();
 
-		HashMap<String,Object> columnKrNmMap=makeColumnKrNmMap();
-		HashMap<String,Object> columnTypeMap=makeColumnTypeMap();
+	ExcelVo vo=new ExcelVo();
 
-		ExcelVo vo=new ExcelVo();
+	vo.setTableName(tableName);
+	vo.setTableKoreaName(tableKoreaName);
+	vo.setLayerType(layerType);
+	vo.setColumnKrNmMap(columnKrNmMap);
+	vo.setColumnTypeMap(columnTypeMap);
 
-		vo.setTableName(tableName);
-		vo.setTableKoreaName(tableKoreaName);
-		vo.setLayerType(layerType);
-		vo.setColumnKrNmMap(columnKrNmMap);
-		vo.setColumnTypeMap(columnTypeMap);
-
-		try{
-			mapper.create(vo);
-		}catch(Exception e){
-			errorMsg="DDL에러";
-			throw e;
-		}
+	try{
+		mapper.create(vo);
+	}catch(Exception e){
+		errorMsg="DDL에러";
+		throw e;
+	}
     }
 
-	private String replaceLyrTypToGeoType(String str) {
-		String result="";
-		switch(str){
-			case "point":   result="Point";
-						    break;
-			case "line":	result="MultiLineString";
-							break;
-			case "polygon": result="MultiPolygon";
-							break;
-		}
-		return result;
+    private String replaceLyrTypToGeoType(String str) {
+	String result="";
+	switch(str){
+		case "point":   result="Point";
+				break;
+		case "line":	result="MultiLineString";
+				break;
+		case "polygon": result="MultiPolygon";
+				break;
 	}
+	return result;
+    }
 
 	private HashMap<String, Object> makeColumnKrNmMap() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		String colNm;
@@ -317,21 +243,21 @@ public class ExcelService extends EgovAbstractServiceImpl {
 		String[] splitList=file.getOriginalFilename().split(Pattern.quote("."));
 		String excelType=splitList[splitList.length-1];
 
-        if("xlsx".equals(excelType)){
-        	if(!executeDMLAtXlsx(file)){
-        		makeErrorMsg();
-        		throw new Exception();
-        	}
-        }
-        else if("xls".equals(excelType)){
-        	if(!executeDMLAtXls(file)){
-        		makeErrorMsg();
-        		throw new Exception();
-        	}
-        }else{
-        	errorMsg="엑셀파일은 xls,xlsx만 가능합니다.";
-        	throw new Exception();
-        }
+		if("xlsx".equals(excelType)){
+			if(!executeDMLAtXlsx(file)){
+				makeErrorMsg();
+				throw new Exception();
+			}
+		}
+		else if("xls".equals(excelType)){
+			if(!executeDMLAtXls(file)){
+				makeErrorMsg();
+				throw new Exception();
+			}
+		}else{
+			errorMsg="엑셀파일은 xls,xlsx만 가능합니다.";
+			throw new Exception();
+		}
 	}
 
 	private boolean executeDMLAtXlsx(MultipartFile file) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, SQLException {
@@ -343,11 +269,11 @@ public class ExcelService extends EgovAbstractServiceImpl {
 			HashMap<String, String> rowMap;
 
 			workbook = new XSSFWorkbook(file.getInputStream());
-	        Sheet sheet = workbook.getSheetAt(0);
-	        Iterator<Row> rows = sheet.iterator();
+	        	Sheet sheet = workbook.getSheetAt(0);
+	       	 	Iterator<Row> rows = sheet.iterator();
 
-	        Row currentRow;
-	        int rowNumber=1;
+	        	Row currentRow;
+	        	int rowNumber=1;
 
 			while (rows.hasNext()) {
 				try{
@@ -369,7 +295,7 @@ public class ExcelService extends EgovAbstractServiceImpl {
 					result=false;
 					e.printStackTrace();
 				}
-		    }
+		        }
 
 		}catch(Exception e){
 			throw e;
@@ -388,11 +314,11 @@ public class ExcelService extends EgovAbstractServiceImpl {
 			HashMap<String, String> rowMap;
 
 			workbook = new HSSFWorkbook(file.getInputStream());
-	        Sheet sheet = workbook.getSheetAt(0);
-	        Iterator<Row> rows = sheet.iterator();
+	        	Sheet sheet = workbook.getSheetAt(0);
+	        	Iterator<Row> rows = sheet.iterator();
 
-	        Row currentRow;
-		    int rowNumber = 1;
+	       		Row currentRow;
+		        int rowNumber = 1;
 
 			while (rows.hasNext()) {
 				try{
@@ -414,7 +340,7 @@ public class ExcelService extends EgovAbstractServiceImpl {
 					result=false;
 					e.printStackTrace();
 				}
-		    }
+		     }
 		}catch(Exception e){
 			throw e;
 		}finally{
@@ -602,11 +528,11 @@ public class ExcelService extends EgovAbstractServiceImpl {
 		String result="";
 		switch(str){
 			case "point":   result="P";
-						    break;
+					break;
 			case "line":	result="L";
-							break;
+					break;
 			case "polygon": result="G";
-							break;
+					break;
 		}
 		return result;
 	}
