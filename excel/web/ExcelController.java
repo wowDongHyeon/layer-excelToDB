@@ -41,17 +41,7 @@ public class ExcelController {
         binder.setValidator(this.validator);
     }
 
-
-    @RequestMapping(value = "/getExcelColumnList.json", method = RequestMethod.POST)
-    public void getExcelColumnList(Model model, HttpSession session, @RequestPart("file") MultipartFile file) throws Exception {
-         try{
-        	 model.addAttribute("excelColumnList", excelService.getExcelColumnList(file));
-         }catch(Exception e){
-        	 model.addAttribute("error", "엑셀파일은 xls,xlsx만 가능합니다.");
-         }
-
-    }
-
+    
     @RequestMapping(value = "/uploadExcel.json", method = RequestMethod.POST)
     public void uploadExcel(Model model, HttpSession session, @RequestParam HashMap<String, String> map,@RequestPart("file") MultipartFile file) throws Exception {
         map.put("userId", (String) session.getAttribute("userId"));
