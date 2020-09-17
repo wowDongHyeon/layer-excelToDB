@@ -42,25 +42,25 @@ public class ExcelUtil {
 	}
 
 	private static String validateTableInfo(HashMap<String, String> map) throws Exception {
-		String tblNm=map.get("tblNm");
+	    String tblNm=map.get("tblNm");
 	    String tblKrNm=map.get("tblKrNm");
 	    String lyrTyp=map.get("lyrTyp");
 	    String colCnt=map.get("colCnt");
 
 	    String msg="pass";
 
-		if(!"pass".equals(validateTblNm(tblNm))){
-			msg=validateTblNm(tblNm);
-		}
-		else if(!"pass".equals(validateTblKrNm(tblKrNm))){
-			msg=validateTblKrNm(tblKrNm);
-		}
-		else if(!"pass".equals(validateLyrTyp(lyrTyp))){
-			msg= validateLyrTyp(lyrTyp);
-		}
-		else if(!"pass".equals(validateColCnt(colCnt))){
-			msg=validateColCnt(colCnt);
-		}
+	    if(!"pass".equals(validateTblNm(tblNm))){
+		msg=validateTblNm(tblNm);
+	    }
+	    else if(!"pass".equals(validateTblKrNm(tblKrNm))){
+		msg=validateTblKrNm(tblKrNm);
+	    }
+	    else if(!"pass".equals(validateLyrTyp(lyrTyp))){
+		msg= validateLyrTyp(lyrTyp);
+	    }
+	    else if(!"pass".equals(validateColCnt(colCnt))){
+		msg=validateColCnt(colCnt);
+	    }
 	    return msg;
 	}
 
