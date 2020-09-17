@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="gmx.gis.layer.service.LayerMapper">
+
+	
+	<delete id="delExcelLayer" parameterType="gmx.gis.layer.service.LayerVo">
+		DELETE FROM xeus.gis_lyr_list
+		WHERE
+			schem_nm = #{schemNm} AND
+			tbl_id = #{tblId};
+	</delete>
+
+
+
+	<select id="addAndgetItem" parameterType="gmx.gis.layer.service.LayerVo" resultType="gmx.gis.layer.service.LayerVo">
+		INSERT INTO xeus.gis_lyr_list ( schem_nm, tbl_id, lyr_nm, lyr_typ, grp_mgr_seq, mk_user, lyr_zidx)
+			VALUES
+				(
+					#{ schemNm },
+					#{ tblId },
+					#{ lyrNm },
+					#{ lyrTyp },
+					#{ grpMgrSeq }:: NUMERIC,
+					#{ mkUser },
+					(select coalesce(max(lyr_zidx)+1, 1) from xeus.gis_lyr_list where grp_mgr_seq = #{grpMgrSeq}::numeric)
+				) RETURNING *;
+	</select>
+
+
+	
+
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="gmx.gis.excel.service.ExcelMapper">
+
+	<select id="create" parameterType="gmx.gis.excel.service.ExcelVo">
+<!-- 		${sql} -->
+		CREATE SEQUENCE "excel"."${tableName}__gid_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
+
+		CREATE TABLE "excel"."${tableName}" (
+			_gid int8 NOT NULL DEFAULT nextval( 'excel.${tableName}__gid_seq' :: regclass ),
+			_annox NUMERIC ( 20, 4 ),
+			_annoy NUMERIC ( 20, 4 ),
+			<foreach item="type" index="column" collection="columnTypeMap" separator=",">
+			 	"${column}" ${type}
+			 </foreach>
+			,_geometry geometry ( ${layerType}, 5186 )
+		);
+
+		COMMENT ON TABLE "excel"."${tableName}" IS '${tableKoreaName}';
+
+		COMMENT ON COLUMN "excel"."${tableName}"."_annox" IS '주기X좌표';
+		COMMENT ON COLUMN "excel"."${tableName}"."_annoy" IS '주기Y좌표';
+		<foreach item="colKrNm" index="column" collection="columnKrNmMap" separator=";">
+			COMMENT ON COLUMN "excel"."${tableName}"."${column}" IS '${colKrNm}';
+		</foreach>
+		COMMENT ON COLUMN "excel"."${tableName}"."_geometry" IS '도형식별번호';
+
+		ALTER SEQUENCE "excel"."${tableName}__gid_seq" OWNED BY "excel"."${tableName}"._gid;
+
+		CREATE INDEX "excel_${tableName}_idx" ON "excel"."${tableName}" USING btree ( _gid );
+		CREATE INDEX "excel_${tableName}_geom_idx" ON "excel"."${tableName}" USING gist ( _geometry );
+	</select>
+
+	<update id="drop" parameterType="gmx.gis.excel.service.ExcelVo">
+		DROP TABLE IF EXISTS "excel"."${tableName}" CASCADE;
+	</update>
+
+
+	<insert id="insertPoint" parameterType="gmx.gis.excel.service.ExcelVo">
+		INSERT INTO "excel"."${tableName}"(
+			 "_annox",
+			 "_annoy",
+
+			 <foreach item="value" index="column" collection="columnValueMap" separator=",">
+			 	"${column}"
+			 </foreach>
+
+			 ,"_geometry"
+		) VALUES (
+			 #{_annox}::NUMERIC,
+			 #{_annoy}::NUMERIC,
+
+			 <foreach item="value" index="column" collection="columnValueMap" separator=",">
+			 	#{value}
+			 </foreach>
+
+			 ,ST_Transform ( ST_GeomFromText ( #{point}, 4326 ), 5186 )
+		);
+	</insert>
+
+	<insert id="insertLine" parameterType="gmx.gis.excel.service.ExcelVo">
+		INSERT INTO "excel"."${tableName}"(
+			 "_annox",
+			 "_annoy",
+
+			 <foreach item="value" index="column" collection="columnValueMap" separator=",">
+			 	"${column}"
+			 </foreach>
+
+			 ,"_geometry"
+		) VALUES (
+			 ST_X (ST_Centroid (ST_Transform ( ST_GeomFromText ( #{line}, 4326 ), 5186 ))),
+			 ST_Y (ST_Centroid (ST_Transform ( ST_GeomFromText ( #{line}, 4326 ), 5186 ))),
+
+			 <foreach item="value" index="colType" collection="columnValueMap" separator=",">
+			 	#{value}
+			 </foreach>
+
+			 ,ST_Transform ( ST_GeomFromText ( #{line}, 4326 ), 5186 )
+		);
+	</insert>
+
+</mapper>
